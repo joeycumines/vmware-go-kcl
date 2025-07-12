@@ -20,3 +20,4 @@ filenames
 
 /test/log.log
 /security.log
+/config.mk
