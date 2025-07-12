@@ -28,7 +28,6 @@
 package checkpoint
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -135,7 +134,7 @@ func (checkpointer *DynamoCheckpoint) GetLease(shard *par.ShardStatus, newAssign
 			claimRequest = *currentCheckpointClaimRequest.S
 			if newAssignTo != claimRequest && !isClaimRequestExpired {
 				checkpointer.log.Debugf("another worker: %s has a claim on this shard. Not going to renew the lease", claimRequest)
-				return errors.New(ErrShardClaimed)
+				return fmt.Errorf("%w: shard claimed by another worker: %s", ErrShardClaimed, claimRequest)
 			}
 		}
 	}

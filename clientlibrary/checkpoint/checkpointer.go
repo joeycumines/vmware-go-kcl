@@ -44,10 +44,9 @@ const (
 
 	// We've completely processed all records in this shard.
 	ShardEnd = "SHARD_END"
-
-	// ErrShardClaimed is returned when shard is claimed
-	ErrShardClaimed = "Shard is already claimed by another node"
 )
+
+var ErrShardClaimed = errors.New("shard is already claimed by another node")
 
 type ErrLeaseNotAcquired struct {
 	cause string

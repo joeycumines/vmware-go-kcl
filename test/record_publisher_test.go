@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/kinesis"
 	"github.com/aws/aws-sdk-go/service/kinesis/kinesisiface"
 	rec "github.com/awslabs/kinesis-aggregation/go/records"
+	//lint:ignore SA1019 KCL is gumby as hell and doesn't use proto3.
 	"github.com/golang/protobuf/proto"
 	"github.com/vmware/vmware-go-kcl/clientlibrary/utils"
 

@@ -14,9 +14,7 @@ checkfmt() {
 lint() {
     golangci-lint run \
         --skip-files=_mock.go \
-        --disable=golint \
         --skip-dirs=test \
-        --fast \
         --timeout=600s \
         --verbose \
         $(local_go_pkgs)

@@ -69,7 +69,9 @@ func TestLeaseStealingInjectCheckpointer(t *testing.T) {
 		regionName:       regionName,
 		workerIDTemplate: workerID + "-%v",
 	}
-	test := NewLeaseStealingTest(t, config, newleaseStealingWorkerFactoryCustomChk(t))
+	test := NewLeaseStealingTest(t, config, newleaseStealingWorkerFactoryCustomChk(t)).
+		WithBackoffSeconds(5).
+		WithMaxRetries(60)
 	test.Run(LeaseStealingAssertions{
 		expectedLeasesForIntialWorker: config.numShards,
 		expectedLeasesPerWorker:       config.numShards / config.numWorkers,

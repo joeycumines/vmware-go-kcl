@@ -70,7 +70,7 @@ func TestGetLeaseNotAquired(t *testing.T) {
 		WithFailoverTimeMillis(300000)
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 	err := checkpoint.GetLease(&par.ShardStatus{
 		ID:         "0001",
 		Checkpoint: "",
@@ -101,7 +101,7 @@ func TestGetLeaseAquired(t *testing.T) {
 		WithFailoverTimeMillis(300000)
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 	marshalledCheckpoint := map[string]*dynamodb.AttributeValue{
 		LeaseKeyKey: {
 			S: aws.String("0001"),
@@ -120,7 +120,7 @@ func TestGetLeaseAquired(t *testing.T) {
 		TableName: aws.String("TableName"),
 		Item:      marshalledCheckpoint,
 	}
-	checkpoint.svc.PutItem(input)
+	assertNoError2(t)(checkpoint.svc.PutItem(input))
 	shard := &par.ShardStatus{
 		ID:         "0001",
 		Checkpoint: "deadbeef",
@@ -147,7 +147,7 @@ func TestGetLeaseAquired(t *testing.T) {
 		ID:  shard.ID,
 		Mux: &sync.RWMutex{},
 	}
-	checkpoint.FetchCheckpoint(status)
+	assert.NoError(t, checkpoint.FetchCheckpoint(status))
 
 	// checkpointer and parent shard id should be the same
 	assert.Equal(t, shard.Checkpoint, status.Checkpoint)
@@ -175,14 +175,14 @@ func TestGetLeaseShardClaimed(t *testing.T) {
 		WithLeaseStealing(true)
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 	err := checkpoint.GetLease(&par.ShardStatus{
 		ID:           "0001",
 		Checkpoint:   "",
 		LeaseTimeout: leaseTimeout,
 		Mux:          &sync.RWMutex{},
 	}, "abcd-efgh")
-	if err == nil || err.Error() != ErrShardClaimed {
+	if !errors.Is(err, ErrShardClaimed) {
 		t.Errorf("Got a lease when it was already claimed by by ijkl-mnop: %s", err)
 	}
 
@@ -222,14 +222,14 @@ func TestGetLeaseClaimRequestExpiredOwner(t *testing.T) {
 	}
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 	err := checkpoint.GetLease(&par.ShardStatus{
 		ID:           "0001",
 		Checkpoint:   "",
 		LeaseTimeout: leaseTimeout,
 		Mux:          &sync.RWMutex{},
 	}, "abcd-efgh")
-	if err == nil || err.Error() != ErrShardClaimed {
+	if !errors.Is(err, ErrShardClaimed) {
 		t.Errorf("Got a lease when it was already claimed by ijkl-mnop: %s", err)
 	}
 }
@@ -259,7 +259,7 @@ func TestGetLeaseClaimRequestExpiredClaimer(t *testing.T) {
 	}
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 	err := checkpoint.GetLease(&par.ShardStatus{
 		ID:           "0001",
 		Checkpoint:   "",
@@ -294,7 +294,7 @@ func TestFetchCheckpointWithStealing(t *testing.T) {
 		WithLeaseStealing(true)
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 
 	status := &par.ShardStatus{
 		ID:           "0001",
@@ -303,7 +303,7 @@ func TestFetchCheckpointWithStealing(t *testing.T) {
 		Mux:          &sync.RWMutex{},
 	}
 
-	checkpoint.FetchCheckpoint(status)
+	assert.NoError(t, checkpoint.FetchCheckpoint(status))
 
 	leaseTimeout, _ := time.Parse(time.RFC3339, *svc.item[LeaseTimeoutKey].S)
 	assert.Equal(t, leaseTimeout, status.LeaseTimeout)
@@ -320,7 +320,7 @@ func TestGetLeaseConditional(t *testing.T) {
 		WithLeaseStealing(true)
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 	marshalledCheckpoint := map[string]*dynamodb.AttributeValue{
 		LeaseKeyKey: {
 			S: aws.String("0001"),
@@ -342,7 +342,7 @@ func TestGetLeaseConditional(t *testing.T) {
 		TableName: aws.String("TableName"),
 		Item:      marshalledCheckpoint,
 	}
-	checkpoint.svc.PutItem(input)
+	assertNoError2(t)(checkpoint.svc.PutItem(input))
 	shard := &par.ShardStatus{
 		ID:           "0001",
 		Checkpoint:   "deadbeef",
@@ -507,7 +507,7 @@ func TestClaimShard(t *testing.T) {
 		WithLeaseStealing(true)
 
 	checkpoint := NewDynamoCheckpoint(kclConfig).WithDynamoDB(svc)
-	checkpoint.Init()
+	assert.NoError(t, checkpoint.Init())
 
 	marshalledCheckpoint := map[string]*dynamodb.AttributeValue{
 		"ShardID": {
@@ -527,7 +527,7 @@ func TestClaimShard(t *testing.T) {
 		TableName: aws.String("TableName"),
 		Item:      marshalledCheckpoint,
 	}
-	checkpoint.svc.PutItem(input)
+	assertNoError2(t)(checkpoint.svc.PutItem(input))
 	shard := &par.ShardStatus{
 		ID:         "0001",
 		Checkpoint: "deadbeef",
@@ -550,10 +550,17 @@ func TestClaimShard(t *testing.T) {
 		ID:  shard.ID,
 		Mux: &sync.RWMutex{},
 	}
-	checkpoint.FetchCheckpoint(status)
+	assert.NoError(t, checkpoint.FetchCheckpoint(status))
 
 	// asiggnedTo, checkpointer, and parent shard id should be the same
 	assert.Equal(t, shard.AssignedTo, status.AssignedTo)
 	assert.Equal(t, shard.Checkpoint, status.Checkpoint)
 	assert.Equal(t, shard.ParentShardId, status.ParentShardId)
+}
+
+func assertNoError2(t *testing.T) func(r any, err error) {
+	return func(r any, err error) {
+		t.Helper()
+		assert.NoError(t, err)
+	}
 }
