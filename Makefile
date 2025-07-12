@@ -1,0 +1,10 @@
+.DEFAULT_GOAL := all
+ROOT_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
+PROJECT_ROOT := $(patsubst %/,%,$(dir $(ROOT_MAKEFILE)))
+
+GO_MODULE_SLUGS_USE_DEADCODE = $(GO_MODULE_SLUGS)
+DEADCODE_IGNORE_PATTERNS_FILE = .deadcodeignore
+DEADCODE_ERROR_ON_UNIGNORED = true
+DEADCODE_FLAGS = -test
+
+include $(PROJECT_ROOT)/make/go.mk
