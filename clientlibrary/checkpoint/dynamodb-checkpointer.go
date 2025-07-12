@@ -44,9 +44,6 @@ import (
 )
 
 const (
-	// ErrInvalidDynamoDBSchema is returned when there are one or more fields missing from the table
-	ErrInvalidDynamoDBSchema = "The DynamoDB schema is invalid and may need to be re-created"
-
 	// NumMaxRetries is the max times of doing retry
 	NumMaxRetries = 10
 )
