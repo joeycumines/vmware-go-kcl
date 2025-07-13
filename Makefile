@@ -11,3 +11,4 @@ DEADCODE_ERROR_ON_UNIGNORED = true
 DEADCODE_FLAGS = -test
 
 include $(PROJECT_ROOT)/make/go.mk
+include $(PROJECT_ROOT)/make/integration.mk

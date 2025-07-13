@@ -18,6 +18,7 @@ filenames
 
 .DS_Store
 
-/test/log.log
-/security.log
+*.log
+
 /config.mk
+/.localstack

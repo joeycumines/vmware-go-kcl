@@ -78,6 +78,9 @@ func TestWorker(t *testing.T) {
 		WithFailoverTimeMillis(300000).
 		WithLogger(log)
 
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
+
 	runTest(kclConfig, false, t)
 }
 
@@ -99,6 +102,9 @@ func TestWorkerWithTimestamp(t *testing.T) {
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000).
 		WithLogger(log)
+
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
 
 	runTest(kclConfig, false, t)
 }
@@ -129,6 +135,9 @@ func TestWorkerWithSigInt(t *testing.T) {
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000).
 		WithLogger(log)
+
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
 
 	runTest(kclConfig, true, t)
 }
@@ -198,6 +207,9 @@ func TestEnhancedFanOutConsumer(t *testing.T) {
 		WithFailoverTimeMillis(300000).
 		WithLogger(log)
 
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
+
 	runTest(kclConfig, false, t)
 }
 
@@ -226,6 +238,9 @@ func TestEnhancedFanOutConsumerDefaultConsumerName(t *testing.T) {
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000).
 		WithLogger(log)
+
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
 
 	runTest(kclConfig, false, t)
 }
@@ -258,6 +273,9 @@ func TestEnhancedFanOutConsumerARN(t *testing.T) {
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000).
 		WithLogger(log)
+
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
 
 	runTest(kclConfig, false, t)
 }

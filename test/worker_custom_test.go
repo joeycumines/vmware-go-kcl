@@ -24,9 +24,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/kinesis"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 
@@ -43,6 +40,10 @@ func TestWorkerInjectCheckpointer(t *testing.T) {
 		WithMaxLeasesForWorker(1).
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000)
+
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
+
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 
@@ -95,6 +96,9 @@ func TestWorkerInjectKinesis(t *testing.T) {
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000)
 
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
+
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 
@@ -104,12 +108,8 @@ func TestWorkerInjectKinesis(t *testing.T) {
 	// configure cloudwatch as metrics system
 	kclConfig.WithMonitoringService(getMetricsConfig(kclConfig, metricsSystem))
 
-	// create custom Kinesis
-	s, err := session.NewSession(&aws.Config{
-		Region: aws.String(regionName),
-	})
-	assert.Nil(t, err)
-	kc := kinesis.New(s)
+	// create custom Kinesis with LocalStack configuration
+	kc := NewKinesisClient(t, regionName, kclConfig.KinesisEndpoint, kclConfig.KinesisCredentials)
 
 	// Put some data into stream.
 	// publishSomeData(t, kc)
@@ -120,7 +120,7 @@ func TestWorkerInjectKinesis(t *testing.T) {
 	worker := wk.NewWorker(recordProcessorFactory(t), kclConfig).
 		WithKinesis(kc)
 
-	err = worker.Start()
+	err := worker.Start()
 	assert.Nil(t, err)
 
 	// wait a few seconds before shutdown processing
@@ -136,6 +136,9 @@ func TestWorkerInjectKinesisAndCheckpointer(t *testing.T) {
 		WithShardSyncIntervalMillis(5000).
 		WithFailoverTimeMillis(300000)
 
+	// Configure LocalStack endpoints if environment variables are set
+	kclConfig = configureLocalStackEndpoints(kclConfig)
+
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 
@@ -145,12 +148,8 @@ func TestWorkerInjectKinesisAndCheckpointer(t *testing.T) {
 	// configure cloudwatch as metrics system
 	kclConfig.WithMonitoringService(getMetricsConfig(kclConfig, metricsSystem))
 
-	// create custom Kinesis
-	s, err := session.NewSession(&aws.Config{
-		Region: aws.String(regionName),
-	})
-	assert.Nil(t, err)
-	kc := kinesis.New(s)
+	// create custom Kinesis with LocalStack configuration
+	kc := NewKinesisClient(t, regionName, kclConfig.KinesisEndpoint, kclConfig.KinesisCredentials)
 
 	// Put some data into stream.
 	// publishSomeData(t, kc)
@@ -165,7 +164,7 @@ func TestWorkerInjectKinesisAndCheckpointer(t *testing.T) {
 		WithKinesis(kc).
 		WithCheckpointer(checkpointer)
 
-	err = worker.Start()
+	err := worker.Start()
 	assert.Nil(t, err)
 
 	// wait a few seconds before shutdown processing
